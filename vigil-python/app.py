@@ -14,7 +14,7 @@ DASHBOARD_HTML = """
   <title>Vigil</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
   <style>
-    body { font-family: 'Segoe UI', sans-serif; background: #17151f; color: #d8d5e0; padding: 2rem; margin: 0; }
+    body { font-family: 'Sora', sans-serif; background: #17151f; color: #d8d5e0; padding: 2rem; margin: 0; }
     h1 { color: #a78bfa; margin-bottom: 0.2rem; }
     .subtitle { color: #8b879c; margin-top: 0; }
     .status-bar { display: flex; gap: 2rem; align-items: center; margin: 1rem 0 2rem 0; padding: 1rem;
@@ -92,7 +92,7 @@ DASHBOARD_HTML = """
     <div class="metric"><div id="correctCount" class="value">0</div><div class="label">Correct</div></div>
     <div class="metric"><div id="incorrectCount" class="value">0</div><div class="label">Incorrect</div></div>
     <div class="metric"><div id="unresolvedCount" class="value">0</div><div class="label">Unresolved</div></div>
-    <div class="metric"><div id="accuracyValue" class="value">n/a</div><div class="label">Accuracy</div></div>
+    <div class="metric"><div id="accuracyValue" class="value">N/A</div><div class="label">Accuracy</div></div>
   </div>
 
   <div class="charts">
