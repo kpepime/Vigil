@@ -27,10 +27,10 @@ DASHBOARD_HTML = """
     .metric .label { font-size: 0.8rem; color: #8b879c; text-transform: uppercase; letter-spacing: 0.05em; }
     .charts { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
     .chart-card { background: #201d2b; border-radius: 8px; border: 1px solid #34304a; padding: 1.2rem;
-                  height: 320px; box-sizing: border-box; display: flex; flex-direction: column; }
+                  height: 320px; box-sizing: border-box; display: flex; flex-direction: column; min-width: 0; }
     .chart-card h3 { margin-top: 0; color: #b6b2c4; font-size: 0.95rem; text-transform: uppercase;
                      letter-spacing: 0.05em; flex-shrink: 0; }
-    .chart-wrap { position: relative; flex-grow: 1; min-height: 0; }
+    .chart-wrap { position: relative; flex-grow: 1; min-height: 0; min-width: 0; }
     .full-width { grid-column: span 2; }
     .table-scroll { max-height: 700px; overflow-y: auto; margin-top: 0.5rem; }
     table { width: 100%; border-collapse: collapse; }
@@ -40,6 +40,44 @@ DASHBOARD_HTML = """
     td:last-child, th:last-child { text-align: right; width: 100px; font-variant-numeric: tabular-nums; }
     .pos { color: #a78bfa; }
     .neg { color: #6b6880; }
+
+    /* Tablet and below */
+    @media (max-width: 1024px) {
+      body { padding: 1rem; }
+      .charts { grid-template-columns: 1fr; }
+      .full-width { grid-column: span 1; }
+      .status-bar { flex-wrap: wrap; gap: 1rem 1.5rem; }
+      .chart-card { height: 280px; }
+    }
+
+    /* Phone */
+    @media (max-width: 600px) {
+      body { padding: 0.75rem; }
+      h1 { font-size: 1.5rem; }
+      .subtitle { font-size: 0.8rem; }
+
+      .status-bar {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.9rem 0.5rem;
+        padding: 0.9rem;
+      }
+      .status-bar > span:first-child {
+        grid-column: span 2;
+        margin-bottom: 0.3rem;
+      }
+      .metric { text-align: left; }
+      .metric .value { font-size: 1.2rem; }
+      .metric .label { font-size: 0.62rem; white-space: nowrap; }
+
+      .chart-card { height: 220px; padding: 0.8rem; }
+      .chart-card h3 { font-size: 0.75rem; }
+
+      table { font-size: 0.72rem; }
+      th, td { padding: 5px 4px; }
+      td:last-child, th:last-child { width: 70px; }
+      .table-scroll { overflow-x: auto; }
+    }
   </style>
 </head>
 <body>
