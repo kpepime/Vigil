@@ -1,0 +1,11 @@
+# Python
+vigil-python/venv/
+vigil-python/__pycache__/
+vigil-python/.env
+
+# Node
+vigil-connect/node_modules/
+vigil-connect/.env
+
+# General
+.DS_Store

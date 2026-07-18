@@ -1,0 +1,23 @@
+{
+  "name": "txline-connect",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^8.1.1",
+    "vite-plugin-node-polyfills": "^0.28.0"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.32.1",
+    "@solana/spl-token": "^0.4.15",
+    "@solana/web3.js": "^1.98.4",
+    "axios": "^1.18.1",
+    "buffer": "^6.0.3",
+    "tweetnacl": "^1.0.3"
+  }
+}
