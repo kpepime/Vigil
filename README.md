@@ -21,9 +21,11 @@ Built for the TxODDS/TxLINE Hackathon (July 2026).
 
 ## Project structure
 
+```
 vigil-connect/ Wallet subscribe + API token activation (JS, browser-based)
 vigil-python/ Live odds monitoring, signal detection, and outcome grading
 documentation/ Technical overview and TxLINE API feedback
+```
 
 ## Setup
 
@@ -49,8 +51,10 @@ pip install -r requirements.txt
 
 Create a `.env` file:
 
+```
 TXLINE_API_TOKEN=your_token_here
 TXLINE_JWT=your_jwt_here
+```
 
 Run Vigil:
 ```bash
