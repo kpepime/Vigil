@@ -1,11 +1,11 @@
 import os
 import json
-import sqlite3
 import time
 import threading
 from datetime import datetime, timedelta
 import requests
 from dotenv import load_dotenv
+import db
 
 load_dotenv()
 
@@ -15,8 +15,6 @@ api_token = os.getenv("TXLINE_API_TOKEN")
 MOVE_THRESHOLD = 2.5
 COOLDOWN_SECONDS = 120
 
-# shared state, protected by a lock since the Flask app will read this
-# while the detector thread writes to it
 _lock = threading.Lock()
 _state = {
     "jwt": os.getenv("TXLINE_JWT"),
@@ -39,31 +37,12 @@ def get_headers():
 
 
 def refresh_jwt():
-    """Get a fresh guest JWT. The long-lived API token doesn't need refreshing."""
     response = requests.post(f"{API_BASE_URL}/auth/guest/start")
     response.raise_for_status()
     new_jwt = response.json()["token"]
     with _lock:
         _state["jwt"] = new_jwt
     print("JWT refreshed.")
-
-
-def get_db():
-    conn = sqlite3.connect("signals.db", check_same_thread=False)
-    cur = conn.cursor()
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS signals (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            fixture_id INTEGER,
-            detected_at TEXT,
-            outcome TEXT,
-            old_pct REAL,
-            new_pct REAL,
-            change REAL
-        )
-    """)
-    conn.commit()
-    return conn, cur
 
 
 def handle_update(record, cur, conn):
@@ -94,10 +73,8 @@ def handle_update(record, cur, conn):
                     last_fired = _state["last_signal_time"].get(key)
                 if last_fired is None or (now - last_fired) > timedelta(seconds=COOLDOWN_SECONDS):
                     print(f"SIGNAL: fixture {fixture_id} [{name}] {old_pct:.1f}% -> {new_pct:.1f}% ({change:+.1f})")
-                    cur.execute(
-                        "INSERT INTO signals (fixture_id, detected_at, outcome, old_pct, new_pct, change) VALUES (?, ?, ?, ?, ?, ?)",
-                        (fixture_id, now.isoformat(), name, old_pct, new_pct, change)
-                    )
+                    q = f"INSERT INTO signals (fixture_id, detected_at, outcome, old_pct, new_pct, change) VALUES ({db.PLACEHOLDER}, {db.PLACEHOLDER}, {db.PLACEHOLDER}, {db.PLACEHOLDER}, {db.PLACEHOLDER}, {db.PLACEHOLDER})"
+                    cur.execute(q, (fixture_id, now.isoformat(), name, old_pct, new_pct, change))
                     conn.commit()
                     with _lock:
                         _state["last_signal_time"][key] = now
@@ -107,8 +84,7 @@ def handle_update(record, cur, conn):
 
 
 def run_detector():
-    """Runs forever. Call this in a background thread."""
-    conn, cur = get_db()
+    conn, cur = db.init_db()
     url = f"{API_BASE_URL}/odds/stream"
 
     while True:

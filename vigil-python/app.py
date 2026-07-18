@@ -1,6 +1,6 @@
 import threading
-import sqlite3
 from collections import Counter
+import db
 from flask import Flask, jsonify, render_template_string
 from detector import run_detector, get_status
 from check_outcomes import get_final_result
@@ -185,7 +185,7 @@ def bucket_magnitude(change):
 
 
 def compute_summary():
-    conn = sqlite3.connect("signals.db")
+    conn = db.get_connection()
     cur = conn.cursor()
 
     cur.execute("SELECT COUNT(*) FROM signals")

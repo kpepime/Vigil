@@ -2,6 +2,7 @@ import os
 import json
 import sqlite3
 import requests
+import db
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -53,7 +54,7 @@ def get_final_result(fixture_id):
 
 
 def main():
-    conn = sqlite3.connect("signals.db")
+    conn = db.get_connection()
     cur = conn.cursor()
 
     # Only look at "increasing" signals, a rising probability is the actual prediction
