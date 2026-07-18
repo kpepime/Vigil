@@ -15,3 +15,12 @@ Server-Sent-Events format rather than a plain JSON array, which isn't mentioned
 anywhere and took some trial and error to figure out. It would help to have the
 devnet IDL and a minimal working end-to-end example (wallet → subscribe →
 activate → first data call) linked directly and prominently from the main docs.
+
+**One more friction point (deployment):** When running on a Linux-based host
+(Render), the `/scores/historical/{fixtureId}` endpoint's response failed to
+decode with a `Zstandard data is incomplete` error, the same code worked fine
+on Windows locally. Explicitly restricting `Accept-Encoding` to `gzip, deflate`
+resolved it. This suggests the endpoint's Zstandard-compressed response doesn't
+always terminate cleanly, or isn't fully supported by all client environments.
+Worth flagging on TxLINE's end, since it's not obvious from the client side
+which encoding is causing trouble.

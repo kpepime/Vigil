@@ -16,8 +16,8 @@ A small browser app connects a Phantom wallet on Solana devnet, submits the
 on-chain `subscribe` transaction for TxLINE's free World Cup tier, and activates
 an API token via signed message authentication.
 
-**Detection engine** (`vigil-python/`)
-- Connects to TxLINE's live odds stream (Server-Sent Events) rather than polling, 
+**Detection engine** (`vigil-python/detector.py`)
+- Connects to TxLINE's live odds stream (Server-Sent Events) rather than polling,
   this means Vigil reacts to a shift the instant it's published, with no
   possibility of missing fast movement between poll intervals.
 - Tracks implied win probability per fixture/outcome using TxLINE's precomputed
@@ -26,23 +26,43 @@ an API token via signed message authentication.
   with a cooldown window to prevent one volatile market from flooding the log.
 - Logs every signal to a local SQLite database with full before/after values.
 - Automatically reconnects on stream drops, so it keeps running unattended.
+- Automatically refreshes its short-lived guest JWT when the stream rejects a
+  connection with a 401/403, so a deployed instance can run indefinitely without
+  manual intervention.
 
-**Outcome grading**
+**Outcome grading** (`vigil-python/check_outcomes.py`)
 Once a monitored fixture reaches `game_finalised`, Vigil pulls the real final
 score (including penalty shootouts, when regular time ends level) and checks
 whether the direction of each signal correctly predicted the winner, producing
 a running accuracy percentage across all resolved signals.
 
+**Live dashboard & deployment** (`vigil-python/app.py`)
+A Flask web app runs the detection engine in a background thread and exposes a
+live-updating dashboard (connection status, signal count, recent signals, and
+running accuracy) plus a JSON API endpoint (`/api/signals`). Deployed on Render.
+
 ## Business/technical highlights
 
 - Fully autonomous once started: no manual intervention between stream
-  connection and signal grading.
+  connection, detection, and grading.
 - Uses TxLINE's live push stream instead of periodic polling, minimizing
   detection latency.
-- Self-healing: reconnects automatically on network/stream failures.
+- Self-healing: reconnects automatically on network/stream failures and
+  refreshes its own auth token, allowing indefinite unattended operation.
 - Grading logic correctly handles edge cases in the real data (e.g. matches
   decided by penalty shootout rather than regular-time goals).
+- Deployed and publicly accessible; note the free hosting tier spins down
+  after inactivity, so the first request after idle time may take up to a
+  minute to respond.
 - Zero cost to run: built entirely on TxLINE's free World Cup devnet tier.
+
+## Known limitation
+
+Signals are currently labeled by TxLINE's raw `part1`/`draw`/`part2` outcome
+codes rather than resolved team names, since `part1` does not always correspond
+to the home team (this depends on the fixture's `Participant1IsHome` flag).
+Grading logic is unaffected by this, but a future version could join fixture
+data to show real team names on the dashboard.
 
 ## TxLINE endpoints used
 
@@ -54,9 +74,9 @@ X-Api-Token: {api_token}
 
 | Endpoint | Method | Purpose | Notes |
 |---|---|---|---|
-| `/auth/guest/start` | POST | Get a short-lived guest JWT | Called once during activation; JWT expires and needs renewal for long-running sessions |
+| `/auth/guest/start` | POST | Get a short-lived guest JWT | Called on activation and automatically re-called by the detector whenever the stream rejects the current JWT |
 | `/token/activate` | POST | Exchange an on-chain `subscribe` tx signature for a long-lived API token | Requires `txSig`, a base64 wallet signature, and `leagues` |
-| `/fixtures/updates/{epochDay}/{hourOfDay}` | GET | List fixture updates for a given day/hour window | `epochDay` = days since Unix epoch; `hourOfDay` = UTC hour (0–23) |
+| `/fixtures/updates/{epochDay}/{hourOfDay}` | GET | List fixture updates for a given day/hour window | `epochDay` = days since Unix epoch; `hourOfDay` = UTC hour (0 - 23) |
 | `/odds/stream` | GET (SSE) | Live push stream of odds updates across all subscribed fixtures | Server-Sent Events format (`data: {...}` lines), stays open indefinitely; includes precomputed implied probabilities in the `Pct` field |
 | `/scores/historical/{fixtureId}` | GET | Full historical message log for one fixture | Also SSE-formatted despite being a "historical" endpoint, not a plain JSON array, undocumented, we found this out via trial and error |
 
