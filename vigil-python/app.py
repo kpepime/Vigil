@@ -51,6 +51,9 @@ DASHBOARD_HTML = """
     <div class="metric"><div id="updateCount" class="value">0</div><div class="label">Updates Processed</div></div>
     <div class="metric"><div id="totalSignals" class="value">0</div><div class="label">Signals Logged</div></div>
     <div class="metric"><div id="resolvedCount" class="value">0</div><div class="label">Resolved</div></div>
+    <div class="metric"><div id="correctCount" class="value">0</div><div class="label">Correct</div></div>
+    <div class="metric"><div id="incorrectCount" class="value">0</div><div class="label">Incorrect</div></div>
+    <div class="metric"><div id="unresolvedCount" class="value">0</div><div class="label">Unresolved</div></div>
     <div class="metric"><div id="accuracyValue" class="value">n/a</div><div class="label">Accuracy</div></div>
   </div>
 
@@ -137,6 +140,9 @@ DASHBOARD_HTML = """
           document.getElementById('updateCount').textContent = data.status.update_count;
           document.getElementById('totalSignals').textContent = data.total;
           document.getElementById('resolvedCount').textContent = data.resolved;
+          document.getElementById('correctCount').textContent = data.correct;
+          document.getElementById('incorrectCount').textContent = data.incorrect;
+          document.getElementById('unresolvedCount').textContent = data.unresolved;
           document.getElementById('accuracyValue').textContent = data.accuracy;
 
           accuracyChart.data.datasets[0].data = [data.correct, data.incorrect, data.unresolved];
