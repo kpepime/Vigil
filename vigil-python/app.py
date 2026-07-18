@@ -82,7 +82,7 @@ DASHBOARD_HTML = """
 </head>
 <body>
   <h1>Vigil</h1>
-  <p class="subtitle">Autonomous monitoring Detector (TxLINE World Cup Odds)</p>
+  <p class="subtitle">Autonomous Monitoring Detector (TxLINE World Cup Odds)</p>
 
   <div class="status-bar">
     <span><span id="statusDot" class="status-dot"></span><span id="statusText">connecting</span></span>
