@@ -34,6 +34,7 @@ def get_headers():
         "Authorization": f"Bearer {jwt}",
         "X-Api-Token": api_token,
         "Accept": "text/event-stream",
+        "Accept-Encoding": "gzip, deflate",
     }
 
 

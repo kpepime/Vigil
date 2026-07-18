@@ -17,9 +17,8 @@ headers = {
 
 
 def get_final_result(fixture_id):
-    """Returns 'part1', 'draw', or 'part2' for a finished fixture, or None if not finished yet."""
     url = f"{API_BASE_URL}/scores/historical/{fixture_id}"
-    response = requests.get(url, headers=headers)
+    response = requests.get(url, headers={**headers, "Accept-Encoding": "gzip, deflate"})
 
     final_message = None
     for line in response.text.splitlines():
