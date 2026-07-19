@@ -17,35 +17,53 @@ headers = {
 }
 
 
+FINISHED_STATUS_IDS = {5, 10, 13}  # Full-time, after extra time, after penalties
+
 def get_final_result(fixture_id):
+    """Returns 'part1', 'draw', or 'part2' for a finished fixture, or None if not finished yet."""
     url = f"{API_BASE_URL}/scores/historical/{fixture_id}"
     response = requests.get(url, headers={**headers, "Accept-Encoding": "gzip, deflate"})
 
-    final_message = None
+    latest_score = None
+    match_finished = False
+
     for line in response.text.splitlines():
-        if line.startswith("data: "):
-            try:
-                record = json.loads(line[len("data: "):])
-            except json.JSONDecodeError:
-                continue
-            if record.get("Action") == "game_finalised":
-                final_message = record
+        if not line.startswith("data: "):
+            continue
+        try:
+            record = json.loads(line[len("data: "):])
+        except json.JSONDecodeError:
+            continue
 
-    if not final_message:
-        return None # match hasn't finished yet
+        # Track the most recent score we've seen, whatever action carried it
+        if "Score" in record:
+            latest_score = record["Score"]
 
-    score = final_message["Score"]
-    p1_goals = score["Participant1"].get("Total", {}).get("Goals", 0)
-    p2_goals = score["Participant2"].get("Total", {}).get("Goals", 0)
+        # Primary signal: TxLINE's own settlement confirmation
+        if record.get("Action") == "game_finalised":
+            match_finished = True
+            if "Score" in record:
+                latest_score = record["Score"]
+
+        # Fallback signal: the game clock itself reached a finished state
+        if record.get("Action") == "status":
+            status_id = record.get("Data", {}).get("StatusId")
+            if status_id in FINISHED_STATUS_IDS:
+                match_finished = True
+
+    if not match_finished or latest_score is None:
+        return None  # genuinely not finished yet, or no score ever recorded
+
+    p1_goals = latest_score["Participant1"].get("Total", {}).get("Goals", 0)
+    p2_goals = latest_score["Participant2"].get("Total", {}).get("Goals", 0)
 
     if p1_goals > p2_goals:
         return "part1"
     elif p2_goals > p1_goals:
         return "part2"
     else:
-        # Regular time tied, check penalty shootout
-        p1_pens = score["Participant1"].get("PE", {}).get("Goals", 0)
-        p2_pens = score["Participant2"].get("PE", {}).get("Goals", 0)
+        p1_pens = latest_score["Participant1"].get("PE", {}).get("Goals", 0)
+        p2_pens = latest_score["Participant2"].get("PE", {}).get("Goals", 0)
         if p1_pens > p2_pens:
             return "part1"
         elif p2_pens > p1_pens:
