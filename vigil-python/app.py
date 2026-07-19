@@ -4,6 +4,7 @@ from flask import Flask, jsonify, render_template_string
 from stats import compute_summary
 from detector import run_detector, get_status
 from telegram_bot import run_bot
+from fixtures import run_fixture_refresher
 
 app = Flask(__name__)
 
@@ -228,4 +229,5 @@ def api_signals():
 if __name__ == "__main__":
     threading.Thread(target=run_detector, daemon=True).start()
     threading.Thread(target=run_bot, daemon=True).start()
+    threading.Thread(target=run_fixture_refresher, daemon=True).start()
     app.run(host="0.0.0.0", port=int(__import__("os").environ.get("PORT", 5000)))

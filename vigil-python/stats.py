@@ -1,5 +1,6 @@
 from collections import Counter
 import db
+import fixtures
 from check_outcomes import get_final_result
 
 
@@ -25,7 +26,10 @@ def compute_summary():
     total = cur.fetchone()[0]
 
     cur.execute("SELECT detected_at, fixture_id, outcome, change FROM signals ORDER BY id DESC LIMIT 200")
-    recent = [(t, f, o, round(c, 1)) for t, f, o, c in cur.fetchall()]
+    recent = [
+        (t, fixtures.describe_fixture(f), fixtures.describe_outcome(f, o), round(c, 1))
+        for t, f, o, c in cur.fetchall()
+    ]
 
     cur.execute("SELECT fixture_id, outcome, change FROM signals WHERE change > 0")
     directional = cur.fetchall()

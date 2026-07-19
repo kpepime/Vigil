@@ -135,3 +135,7 @@ def get_status():
             "status": _state["status"],
             "update_count": _state["update_count"],
         }
+    
+def get_current_jwt():
+    with _lock:
+        return _state["jwt"]
