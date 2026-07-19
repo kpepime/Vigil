@@ -3,6 +3,7 @@ import json
 import sqlite3
 import requests
 import db
+import fixtures
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -22,7 +23,7 @@ FINISHED_STATUS_IDS = {5, 10, 13}  # Full-time, after extra time, after penaltie
 def get_final_result(fixture_id):
     """Returns 'part1', 'draw', or 'part2' for a finished fixture, or None if not finished yet."""
     url = f"{API_BASE_URL}/scores/historical/{fixture_id}"
-    response = requests.get(url, headers={**headers, "Accept-Encoding": "gzip, deflate"})
+    response = requests.get(url, headers=headers)  # requests handles Accept-Encoding/decompression itself
 
     latest_score = None
     match_finished = False
@@ -91,19 +92,23 @@ def main():
     checked_fixtures = {}
 
     for row_id, fixture_id, outcome, old_pct, new_pct, change in rows:
+        label = fixtures.describe_fixture(fixture_id)
+
         if fixture_id not in checked_fixtures:
             checked_fixtures[fixture_id] = get_final_result(fixture_id)
 
         result = checked_fixtures[fixture_id]
 
         if result is None:
-            print(f"Fixture {fixture_id}: not finished yet, skipping")
+            print(f"Fixture: {label}\nStatus: not finished yet, skipping\n")
             unresolved += 1
             continue
 
+        outcome_label = fixtures.describe_outcome(fixture_id, outcome)
+        result_label = fixtures.describe_outcome(fixture_id, result)
         was_correct = (outcome == result)
         status = "CORRECT" if was_correct else "WRONG"
-        print(f"Fixture {fixture_id}: signal predicted [{outcome}], actual result [{result}] -> {status}")
+        print(f"Fixture: {label}\nPredicted: {outcome_label} | Actual: {result_label} -> {status}\n")
 
         if was_correct:
             correct += 1

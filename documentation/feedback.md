@@ -6,7 +6,7 @@ feed saved us from writing our own conversion logic. The free devnet tier made
 it possible to build a fully working prototype with zero cost.
 
 **Where I hit friction:** The published documentation examples (subscribe/
-activate flow, endpoint paths) didn't match the real, current API, I had to go
+activate flow, endpoint paths) didn't match the real, current API I had to go
 into the `tx-on-chain` GitHub repo directly and read the actual example scripts
 to find working endpoint paths (`/fixtures/updates/{epochDay}/{hourOfDay}`,
 `/odds/stream`, `/scores/historical/{fixtureId}`), since the docs site's listed
@@ -29,13 +29,21 @@ which encoding is causing trouble.
 odds/fixture data have no corresponding scores history at all (the
 `/scores/historical/{fixtureId}` endpoint returns a 200 with an empty body,
 confirmed on a real fixture, Colombia vs Portugal). This appears to reflect
-TxLINE's underlying scores coverage approval process rather than a
-client-side issue. Vigil's outcome grader correctly treats these as
-unresolved rather than erroring, but it means not every odds signal is
-guaranteed to eventually become gradeable.
+TxLINE's underlying scores coverage approval process rather than a client-side
+issue. It would help to have a documented way to check scores-coverage status
+for a given fixture ahead of time (the `CoverageStatus` field mentioned in the
+Scores API documentation didn't appear to be exposed on the endpoints I used).
 
 **Match finish detection required a fallback.** Relying solely on the
 `game_finalised` action to detect a completed match proved unreliable for some
 fixtures. Vigil now also treats the game clock reaching a terminal `StatusId`
 (5 = full-time, 10 = after extra time, 13 = after penalty shootout) as
-confirmation the match is over, using whichever signal arrives first.
+confirmation the match is over, using whichever signal arrives first. It's not
+fully clear from the documentation which of these should be treated as the
+authoritative "match is truly over" signal, or whether they're always meant to
+both fire.
+
+**Small but useful:** `/fixtures/updates/{epochDay}/{hourOfDay}` doubles nicely
+as a source of real team names, not just fixture metadata, I used it to
+resolve human-readable names for our dashboard and Telegram bot, on top of its
+primary purpose of fixture discovery.
