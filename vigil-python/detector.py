@@ -44,6 +44,12 @@ def refresh_jwt():
         _state["jwt"] = new_jwt
     print("JWT refreshed.")
 
+def broadcast_to_telegram(fixture_id, outcome, old_pct, new_pct, change):
+    try:
+        import telegram_bot
+        telegram_bot.broadcast_signal(fixture_id, outcome, old_pct, new_pct, change)
+    except Exception as e:
+        print(f"[telegram] broadcast skipped: {e}")
 
 def handle_update(record, cur, conn):
     if "Prices" not in record or record.get("SuperOddsType") != "1X2_PARTICIPANT_RESULT":
@@ -76,6 +82,7 @@ def handle_update(record, cur, conn):
                     q = f"INSERT INTO signals (fixture_id, detected_at, outcome, old_pct, new_pct, change) VALUES ({db.PLACEHOLDER}, {db.PLACEHOLDER}, {db.PLACEHOLDER}, {db.PLACEHOLDER}, {db.PLACEHOLDER}, {db.PLACEHOLDER})"
                     cur.execute(q, (fixture_id, now.isoformat(), name, old_pct, new_pct, change))
                     conn.commit()
+                    broadcast_to_telegram(fixture_id, name, old_pct, new_pct, change)
                     with _lock:
                         _state["last_signal_time"][key] = now
 

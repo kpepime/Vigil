@@ -30,6 +30,11 @@ def init_db():
                 change REAL
             )
         """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS telegram_subscribers (
+                chat_id BIGINT PRIMARY KEY
+            )
+        """)
     else:
         cur.execute("""
             CREATE TABLE IF NOT EXISTS signals (
@@ -40,6 +45,11 @@ def init_db():
                 old_pct REAL,
                 new_pct REAL,
                 change REAL
+            )
+        """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS telegram_subscribers (
+                chat_id INTEGER PRIMARY KEY
             )
         """)
     conn.commit()
