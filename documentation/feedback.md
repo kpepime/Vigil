@@ -24,3 +24,18 @@ resolved it. This suggests the endpoint's Zstandard-compressed response doesn't
 always terminate cleanly, or isn't fully supported by all client environments.
 Worth flagging on TxLINE's end, since it's not obvious from the client side
 which encoding is causing trouble.
+
+**Coverage gaps between odds and scores data:** Some fixtures that appear in
+odds/fixture data have no corresponding scores history at all (the
+`/scores/historical/{fixtureId}` endpoint returns a 200 with an empty body,
+confirmed on a real fixture, Colombia vs Portugal). This appears to reflect
+TxLINE's underlying scores coverage approval process rather than a
+client-side issue. Vigil's outcome grader correctly treats these as
+unresolved rather than erroring, but it means not every odds signal is
+guaranteed to eventually become gradeable.
+
+**Match finish detection required a fallback.** Relying solely on the
+`game_finalised` action to detect a completed match proved unreliable for some
+fixtures. Vigil now also treats the game clock reaching a terminal `StatusId`
+(5 = full-time, 10 = after extra time, 13 = after penalty shootout) as
+confirmation the match is over, using whichever signal arrives first.

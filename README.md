@@ -35,6 +35,45 @@ The dashboard is fully responsive, usable on desktop, tablet, and phone screens.
    configured. This means signal history survives restarts and redeploys on the
    live instance, instead of resetting.
 
+## Understanding the dashboard
+
+When you open Vigil's dashboard (locally or at the live demo link), here's what
+each part means and why it matters:
+
+- **Connection status**: shows whether Vigil is actively connected to TxLINE's
+  live odds stream right now. "Connected" means it's actively watching matches
+  in real time; "reconnecting" means it briefly lost the stream and is
+  automatically recovering (no manual intervention needed).
+- **Updates processed**: the raw count of odds updates Vigil has read from the
+  stream since it started. This is almost always much higher than "signals
+  logged," since most updates are small, ordinary price movements that don't
+  cross the significance threshold.
+- **Signals logged**: the number of times Vigil detected a genuinely sharp
+  move (a win-probability shift above the configured threshold) and recorded it.
+- **Resolved/Correct/Incorrect/Unresolved**: once a signal's match
+  actually finishes, Vigil checks whether the team whose probability rose
+  actually won. "Resolved" is the total graded so far; "Unresolved" means the
+  match the signal belongs to hasn't finished yet. This number climbs over time
+  as matches conclude.
+- **Accuracy**: of the resolved signals, what percentage correctly predicted
+  the winner. This is the core metric Vigil exists to produce: not just "did
+  the odds move," but "did that move actually mean something."
+- **Signal Outcomes** (doughnut chart): the same correct/incorrect/unresolved
+  split, visually.
+- **Movement Magnitude Distribution** (bar chart): how big the detected shifts
+  tend to be. A distribution skewed toward larger swings can suggest the
+  threshold is well-tuned to catch meaningful moves rather than noise.
+- **Signal Activity Over Time** (line chart): how frequently Vigil is firing
+  signals, over the session. Useful for spotting when a match entered a
+  volatile stretch (e.g. near a goal or red card).
+- **Recent Signals** (table): a scrollable, chronological log of individual
+  signals: which fixture, which outcome moved, and by how much.
+
+What to actually watch for: a live "connected" status, a climbing "signals
+logged" count (proof the detector is actively working), and, once any watched
+match finishes, a real accuracy percentage appearing instead of "N/A" (proof
+the full detect-then-grade loop works end to end, not just half of it).
+
 ## Project structure
 
 ```
